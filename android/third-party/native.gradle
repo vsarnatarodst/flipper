@@ -11,7 +11,7 @@ import org.apache.tools.ant.filters.ReplaceTokens
 // Increment this when making changes to any of the native
 // dependencies.
 // !!!
-final def CACHE_REVISION = 31
+final def CACHE_REVISION = 33
 
 final def externalDir = new File("$projectDir/external")
 final def downloadsDir = new File("$externalDir/downloads")
@@ -155,6 +155,29 @@ task finalizeLibEvent(dependsOn: [prepareLibEvent2], type: Copy) {
     into "$externalDir/LibEvent/libevent-2.1.11-stable/"
 }
 
+task downloadOpenSSL(dependsOn: createNativeDepsDirectories, type: Download) {
+    onlyIf { isCacheOutOfDate(CACHE_REVISION) }
+    src 'https://www.openssl.org/source/openssl-4.0.0.tar.gz'
+    onlyIfNewer true
+    overwrite false
+    dest new File(downloadsDir, 'openssl-' + getDownloadFileName(src))
+}
+
+task prepareOpenSSL(dependsOn: [downloadOpenSSL], type: Copy) {
+    onlyIf { isCacheOutOfDate(CACHE_REVISION) }
+    from tarTree(downloadOpenSSL.dest)
+    include 'openssl-1.1.1w/**/*'
+    includeEmptyDirs = false
+    into "$externalDir/OpenSSL"
+}
+
+task finalizeOpenSSL(dependsOn: [prepareOpenSSL], type: Copy) {
+    onlyIf { isCacheOutOfDate(CACHE_REVISION) }
+    from './overrides/OpenSSL/'
+    include 'CMakeLists.txt', 'build_openssl.sh'
+    into "$externalDir/OpenSSL"
+}
+
 task downloadFolly(dependsOn: createNativeDepsDirectories, type: Download) {
     onlyIf { isCacheOutOfDate(CACHE_REVISION) }
     src 'https://github.com/facebook/folly/archive/v2020.02.17.00.tar.gz'
@@ -192,7 +215,7 @@ task finalizeFolly(dependsOn: [finalizeFollyWithDemangle, finalizeFollyWithFileU
     onlyIf { isCacheOutOfDate(CACHE_REVISION) }
 }
 
-task writeCacheRevision(dependsOn: [finalizeFolly]) {
+task writeCacheRevision(dependsOn: [finalizeFolly, finalizeOpenSSL]) {
     doLast {
         buildDir.mkdirs()
         revisionFile.text = CACHE_REVISION.toString()

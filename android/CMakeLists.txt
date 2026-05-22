@@ -8,7 +8,6 @@ project(flipper CXX)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_VERBOSE_MAKEFILE on)
-
 set(PACKAGE_NAME      "flipper")
 
 add_compile_options(-DFLIPPER_OSS=1
@@ -20,6 +19,7 @@ add_compile_options(-DFLIPPER_OSS=1
                     -DFOLLY_USE_LIBCPP=1
                     -DFOLLY_HAVE_LIBJEMALLOC=0
                     -DFOLLY_HAVE_PREADV=0
+                    -D_GNU_SOURCE=1
                     -frtti
                     -fexceptions
                     -Wno-error
@@ -50,7 +50,6 @@ set(libfolly_build_DIR ${build_DIR}/libfolly/${ANDROID_ABI})
 
 file(MAKE_DIRECTORY ${build_DIR})
 find_package(fbjni REQUIRED CONFIG)
-find_package(openssl REQUIRED CONFIG)
 
 add_subdirectory(${libflipper_DIR} ${libflipper_build_DIR})
 target_include_directories(${PACKAGE_NAME} PRIVATE
@@ -67,4 +66,5 @@ target_include_directories(${PACKAGE_NAME} PRIVATE
     ${LIBEVENT_DIR}/include/event2
     )
 
+target_link_options(${PACKAGE_NAME} PRIVATE "-Wl,-z,max-page-size=16384")
 target_link_libraries(${PACKAGE_NAME} fbjni::fbjni flippercpp)

@@ -48,6 +48,5 @@ android {
     dependencies {
         implementation project(':glog')
         implementation project(':doubleconversion')
-        implementation deps.openssl
     }
 }

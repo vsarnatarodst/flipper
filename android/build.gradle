@@ -47,6 +47,7 @@ android {
             }
         }
     }
+    tasks.register("prepareKotlinBuildScriptModel"){}
 
     compileOptions {
         targetCompatibility rootProject.javaTargetVersion
@@ -60,6 +61,9 @@ android {
     packagingOptions {
         exclude("**/libfbjni.so")
         exclude("**/libc++_shared.so")
+        jniLibs {
+            useLegacyPackaging false
+        }
     }
 
     externalNativeBuild {
@@ -73,7 +77,6 @@ android {
         implementation deps.kotlinStdLibrary
 
         implementation deps.kotlinCoroutinesAndroid
-        implementation deps.openssl
         implementation deps.fbjni
         implementation deps.soloader
         implementation deps.curtains
